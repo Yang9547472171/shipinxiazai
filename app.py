@@ -5,6 +5,7 @@ import os
 from pathlib import Path
 import threading
 import time
+from urllib.parse import urlparse
 
 app = Flask(__name__)
 app.config.update(
@@ -24,6 +25,15 @@ DOWNLOAD_FOLDER.mkdir(exist_ok=True, parents=True)
 
 # 存储下载进度
 download_progress = {}
+
+def get_video_platform(url):
+    """判断视频平台"""
+    domain = urlparse(url).netloc.lower()
+    if 'youtube.com' in domain or 'youtu.be' in domain:
+        return 'youtube'
+    elif 'bilibili.com' in domain:
+        return 'bilibili'
+    return 'unknown'
 
 def get_video_info(url):
     """获取视频信息"""
@@ -60,23 +70,57 @@ def download_video(url, video_id):
                 progress = (downloaded_bytes / total_bytes) * 100
                 download_progress[video_id]['progress'] = progress
 
+    platform = get_video_platform(url)
+    
+    # 基础配置
     ydl_opts = {
-        'format': 'best[ext=mp4]',
         'progress_hooks': [progress_hook],
         'outtmpl': str(DOWNLOAD_FOLDER / '%(title)s.%(ext)s'),
-        'merge_output_format': 'mp4'
     }
+
+    # B站特定配置
+    if platform == 'bilibili':
+        ydl_opts.update({
+            'format': 'mp4/best',  # 尝试 mp4 或最佳质量
+            'cookiesfrombrowser': ('chrome',),
+            'extractor_args': {
+                'bilibili': {
+                    'cookie': '',
+                }
+            }
+        })
+        
+        # 先尝试获取可用格式
+        try:
+            with yt_dlp.YoutubeDL({'quiet': True}) as ydl:
+                info = ydl.extract_info(url, download=False)
+                formats = info.get('formats', [])
+                # 选择一个可用的格式
+                for f in formats:
+                    if f.get('ext') == 'mp4':
+                        ydl_opts['format'] = f['format_id']
+                        break
+        except Exception as e:
+            print(f"获取格式失败: {e}")
+            
+    else:  # YouTube配置
+        ydl_opts.update({
+            'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
+            'merge_output_format': 'mp4'
+        })
     
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=False)
             download_progress[video_id].update({
                 'title': info.get('title', '未知标题'),
-                'author': info.get('uploader', '未知作者')
+                'author': info.get('uploader', '未知作者'),
+                'platform': platform
             })
             ydl.download([url])
         download_progress[video_id]['status'] = 'completed'
     except Exception as e:
+        print(f"下载错误: {e}")  # 添加错误日志
         download_progress[video_id]['status'] = 'error'
         download_progress[video_id]['error'] = str(e)
 

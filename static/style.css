@@ -425,6 +425,8 @@ button.secondary:hover {
     margin-bottom: 0.8rem;
 }
 
+/* 统一的删除按钮样式 */
+.close-button,
 .delete-video {
     background: none;
     border: none;
@@ -433,17 +435,40 @@ button.secondary:hover {
     opacity: 0;
     cursor: pointer;
     transition: all 0.2s ease;
-    color: #dc3545;
+    color: rgba(255, 255, 255, 0.8);
 }
 
+/* 悬浮时显示删除按钮 */
+.download-item:hover .close-button,
 .video-item:hover .delete-video {
-    opacity: 0.7;
+    opacity: 1;
 }
 
+/* 删除按钮悬浮效果 */
+.close-button:hover,
 .delete-video:hover {
     opacity: 1;
-    background-color: rgba(220, 53, 69, 0.1);
-    border-radius: 4px;
+    background: none;
+    color: #fff;
+}
+
+/* 确保所有状态下都没有背景色 */
+.close-button:active,
+.close-button:focus,
+.delete-video:active,
+.delete-video:focus {
+    background: none;
+    outline: none;
+}
+
+/* 错误状态下的删除按钮 */
+.download-item.error .close-button {
+    opacity: 1;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.download-item.error .close-button:hover {
+    color: #fff;
 }
 
 /* 动画效果 */
@@ -466,5 +491,68 @@ button.secondary:hover {
 .text-button .icon,
 .delete-video .icon {
     line-height: 1;
+}
+
+/* 平台图标样式 */
+.platform-icon {
+    margin-right: 0.5rem;
+    font-size: 1.2rem;
+}
+
+/* 视频项中添加平台标识 */
+.video-info .platform {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.2rem 0.5rem;
+    background: rgba(65, 120, 255, 0.1);
+    border-radius: 4px;
+    font-size: 0.8rem;
+    color: #4178ff;
+}
+
+/* B站视频特殊样式 */
+.video-item[data-platform="bilibili"] .video-info .platform {
+    background: rgba(251, 114, 153, 0.1);
+    color: #fb7299;
+}
+
+/* 下载项头部样式 */
+.item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+}
+
+/* 关闭按钮样式 */
+.close-button {
+    background: none;
+    border: none;
+    color: #666;
+    font-size: 1.2rem;
+    padding: 0.2rem 0.5rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    opacity: 0.7;
+}
+
+.close-button:hover {
+    opacity: 1;
+    color: #dc3545;
+    background: none;
+}
+
+/* 错误状态下突出显示关闭按钮 */
+.download-item.error .close-button {
+    color: #ffffff;
+    opacity: 1;
+}
+
+/* 移除所有可能的背景效果 */
+.close-button:active,
+.close-button:focus {
+    background: none;
+    outline: none;
 }
  

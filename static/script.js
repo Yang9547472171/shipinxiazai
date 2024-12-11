@@ -53,10 +53,19 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function createDownloadItem(url) {
+        const platform = url.toLowerCase().includes('bilibili.com') ? 'bilibili' : 'youtube';
+        const platformIcon = platform === 'bilibili' ? '📺' : '▶️';
+        
         const item = document.createElement('div');
         item.className = 'download-item';
         item.innerHTML = `
-            <div class="title">${url}</div>
+            <div class="item-header">
+                <div class="title">
+                    <span class="platform-icon" title="${platform}">${platformIcon}</span>
+                    ${url}
+                </div>
+                <button class="close-button" title="关闭">×</button>
+            </div>
             <div class="progress-container">
                 <div class="progress-bar">
                     <div class="progress" style="width: 0%"></div>
@@ -64,6 +73,14 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>
             <div class="status">准备下载...</div>
         `;
+
+        // 添加关闭按钮事件
+        const closeButton = item.querySelector('.close-button');
+        closeButton.addEventListener('click', () => {
+            item.classList.add('removing');
+            setTimeout(() => item.remove(), 300);
+        });
+
         return item;
     }
 
@@ -110,6 +127,15 @@ document.addEventListener('DOMContentLoaded', function() {
         item.className = `download-item ${status}`;
         const statusText = item.querySelector('.status');
         statusText.textContent = message;
+
+        // 如果是错误状态，显示关闭按钮的提示
+        if (status === 'error') {
+            const closeButton = item.querySelector('.close-button');
+            if (closeButton) {
+                closeButton.title = '点击关闭';
+                closeButton.style.display = 'block';  // 确保错误时关闭按钮可见
+            }
+        }
 
         if (status === 'completed') {
             if (videoList && videoList.classList.contains('collapsed')) {
