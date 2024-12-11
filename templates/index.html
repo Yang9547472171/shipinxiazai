@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube 批量下载器</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>YouTube 批量下载器</h1>
+            <p>输入 YouTube 视频链接，支持批量下载（每行一个链接）</p>
+        </header>
+
+        <main>
+            <div class="download-form">
+                <textarea id="videoUrls" placeholder="请输入 YouTube 视频链接，每行一个..."></textarea>
+                <div class="button-group">
+                    <button id="downloadBtn">开始下载</button>
+                    <button id="clearBtn" class="secondary">清空</button>
+                </div>
+            </div>
+
+            <div id="downloadList" class="download-list">
+                <!-- 下载项会动态添加到这里 -->
+            </div>
+
+            {% if videos %}
+            <div class="video-section">
+                <div class="section-header">
+                    <h2>已下载视频 ({{ videos|length }})</h2>
+                    <div class="section-actions">
+                        <button id="clearAll" class="text-button danger" title="清空所有视频">
+                            <span class="icon">🗑</span>清空全部
+                        </button>
+                        <button id="toggleVideos" class="icon-button" title="展开/折叠">
+                            <span class="icon">▼</span>
+                        </button>
+                    </div>
+                </div>
+                <div id="videoList" class="video-list">
+                    <div class="videos">
+                        {% for video in videos %}
+                        <div class="video-item" data-video-path="{{ video.path }}">
+                            <div class="video-header">
+                                <h3 title="{{ video.title }}">{{ video.title }}</h3>
+                                <button class="delete-video icon-button danger" title="删除视频">
+                                    <span class="icon">×</span>
+                                </button>
+                            </div>
+                            <video controls preload="metadata">
+                                <source src="{{ url_for('serve_video', filename=video.path) }}" type="video/mp4">
+                                <source src="{{ url_for('serve_video', filename=video.path) }}" type="video/webm">
+                                您的浏览器不支持 HTML5 视频播放。
+                            </video>
+                            <div class="video-info">
+                                <p>文件大小: {{ video.size }}</p>
+                                <p>存储路径: downloads/{{ video.path }}</p>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </main>
+    </div>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html> 
